@@ -1,1 +1,1 @@
-# socket
+# Internet Relay Chat - TCP
