@@ -2,7 +2,7 @@ CC=g++
 LD=g++
 
 CFLAGS= -std=c++11 -pthread -Wall -Wextra -Werror -pedantic -g -O0
-LDLIBS=-lm -lstdc++ -lncurses -lreadline
+LDLIBS=-lm -lstdc++ -lncurses -lreadline -lpthread
 DLDFLAGS=-g
 LDFLAGS=
 

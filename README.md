@@ -24,8 +24,6 @@ Implementation made for the discipline of Computer Networks - SSC0142 at ICMC - 
  - Or compile one by one:
     ```
     make server
-    ```
-		```
 		make client
 		```
 		
