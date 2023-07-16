@@ -1,8 +1,6 @@
-# ircCppImplementation
+# Internet Relay Chat 
 
-IRC Implementation in CPP
-
-Implementation made for the discipline of Computer Networks - SSC0142 at ICMC - USP
+Internet Relay Chat (IRC) implemented in C++ using RFC 1459 expecifications
 
 ## Group:
 - Vitor Beneti Martins - 11877635
