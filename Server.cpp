@@ -1,13 +1,9 @@
 #include "Server.hpp"
 #include "Socket.hpp"
 #include "interface.hpp"
-#include <algorithm>
-#include <iostream>
+#include <bits/stdc++.h>
 #include <regex>
-#include <string>
 #include <sys/socket.h>
-#include <unordered_map>
-#include <vector>
 
 Server::Server(std::string address) {
   this->clients = std::unordered_map<std::string, SocketWithInfo *>();
@@ -21,7 +17,7 @@ int Server::init() {
 
   this->clientInfo = new SocketWithInfo(socket, false);
 
-  socket->bind(address, DEFAULT_PORT);
+  socket->socketbind(address, DEFAULT_PORT);
 
   this->shouldBeRunning = true;
 
@@ -122,7 +118,7 @@ void Server::closeClient(SocketWithInfo *client) {
 
 void Server::_accept() {
 
-  this->socket->listen(10);
+  this->socket->socketListen(5);
 
   while (this->shouldBeAccepting) {
 

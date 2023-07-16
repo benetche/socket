@@ -1,12 +1,9 @@
 #include "Client.hpp"
 #include "Socket.hpp"
 #include "interface.hpp"
-#include <iostream>
+#include <bits/stdc++.h>
 #include <regex>
-#include <string.h>
-#include <string>
 #include <sys/socket.h>
-#include <vector>
 
 Client::Client(std::string address) {
   this->address = address;
@@ -31,7 +28,7 @@ int Client::start() {
 
   socket->setBlocking(false);
 
-  int status = socket->connect(address, DEFAULT_PORT);
+  int status = socket->socketConnect(address, DEFAULT_PORT);
 
   socket->setBlocking(true);
 
@@ -135,7 +132,7 @@ void Client::startListening() {
   this->listenThread = new std::thread(&Client::_listen, this);
 }
 
-bool Client::isMuted() { return clientInfo->isMuted; }
+bool Client::checkMute() { return clientInfo->isMuted; }
 
 void Client::_listen() {
   std::string message;

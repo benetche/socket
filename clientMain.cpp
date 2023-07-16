@@ -1,8 +1,6 @@
 #include "Client.hpp"
 #include "interface.hpp"
 #include "util.hpp"
-#include <iostream>
-// #include <readline/history.h>
 
 using namespace std;
 
@@ -70,21 +68,7 @@ int main() {
 
         return 0;
       });
-  clientUi->implementCommand(
-      "/invite", [client, clientUi](const GUI::argsT &args) {
-        if (args.size() != 2) {
-          // Display error message if command is not used correctly
-          clientUi->addToWindow(
-              "Try: /invite <nickname>\nHint: This will invite a user");
-          return 1;
-        }
 
-        if (client->isConnected(true) && client->hasChannel(true)) {
-          client->sendMessage("/invite " + args[1]);
-        }
-
-        return 0;
-      });
   // Add a command to unmute a user
   clientUi->implementCommand(
       "/unmute", [client, clientUi](const GUI::argsT &args) {
@@ -169,7 +153,7 @@ int main() {
       return 0;
     }
 
-    if (client->isMuted()) {
+    if (client->checkMute()) {
       // Display error message if muted in the channel
       GUI::log("You are muted in this channel!");
       return 0;

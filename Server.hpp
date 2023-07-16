@@ -5,12 +5,7 @@
 #define MAX_MSG_SIZE 4096
 
 #include "Socket.hpp"
-#include <mutex>
-#include <string>
-#include <thread>
-#include <unordered_map>
-#include <vector>
-
+#include <bits/stdc++.h>
 struct Channel {
   std::string channelName;
   std::string admin;

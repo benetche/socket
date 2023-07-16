@@ -29,17 +29,17 @@ MySocket::MySocket(int domain, int type, int protocol) {
   ipAddress = "";
 }
 
-int MySocket::bind(std::string ip, std::string port) {
+int MySocket::socketbind(std::string ip, std::string port) {
   this->ipAddress = ip;
   this->portNumber = port;
   int status;
 
   if (addressInfo.ai_family == AF_UNIX) {
-    struct sockaddr_un addr;
-    memset(&addr, 0, sizeof addr);
-    addr.sun_family = AF_UNIX;
-    strncpy(addr.sun_path, ip.c_str(), sizeof(addr.sun_path) - 1);
-    status = ::bind(socketFD, (struct sockaddr *)&addr, sizeof addr);
+    struct sockaddr_un address;
+    memset(&address, 0, sizeof address);
+    address.sun_family = AF_UNIX;
+    strncpy(address.sun_path, ip.c_str(), sizeof(address.sun_path) - 1);
+    status = ::bind(socketFD, (struct sockaddr *)&address, sizeof address);
   } else {
     struct addrinfo *ans;
     addressInfo.ai_flags = AI_PASSIVE;
@@ -61,7 +61,7 @@ int MySocket::bind(std::string ip, std::string port) {
   return status;
 }
 
-int MySocket::connect(std::string ip, std::string port) {
+int MySocket::socketConnect(std::string ip, std::string port) {
   this->ipAddress = ip;
   this->portNumber = port;
   int status = 0;
@@ -143,7 +143,7 @@ int MySocket::connect(std::string ip, std::string port) {
   return status;
 }
 
-int MySocket::listen(int maxQueue) {
+int MySocket::socketListen(int maxQueue) {
   int status;
   status = ::listen(socketFD, maxQueue);
   if (status == -1) {

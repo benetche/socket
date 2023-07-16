@@ -1,9 +1,8 @@
 #ifndef _SOCKET_HPP_
 #define _SOCKET_HPP_
 
+#include <bits/stdc++.h>
 #include <netdb.h>
-#include <string>
-#include <vector>
 
 class MySocket;
 
@@ -27,9 +26,9 @@ public:
   int socketFD;
 
   MySocket(int domain, int type, int protocol);
-  int bind(std::string ip, std::string port);
-  int connect(std::string ip, std::string port);
-  int listen(int maxQueue);
+  int socketbind(std::string ip, std::string port);
+  int socketConnect(std::string ip, std::string port);
+  int socketListen(int maxQueue);
   MySocket *accept();
   int socketWrite(std::string msg);
   int socketRead(std::string &buffer, int length);

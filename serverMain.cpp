@@ -1,8 +1,6 @@
 #include "Server.hpp"
 #include "interface.hpp"
 #include "util.hpp"
-#include <iostream>
-#include <thread>
 
 using namespace std;
 

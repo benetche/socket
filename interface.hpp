@@ -6,12 +6,8 @@
 
 #include "Socket.hpp"
 #include "util.hpp"
+#include <bits/stdc++.h>
 #include <curses.h>
-#include <functional>
-#include <mutex>
-#include <string>
-#include <unordered_map>
-#include <vector>
 
 #define CHECK_NCURSES(fn, ...)                                                 \
   if (fn(__VA_ARGS__) == ERR)                                                  \
