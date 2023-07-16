@@ -16,7 +16,7 @@ Implementation made for the discipline of Computer Networks - SSC0142 at ICMC - 
 - C++ Standard: C++11
 
 ## Instructions:
-
+You'll probably need to install ncurses and readline libraries
   - You can compile both server and client by:
       ```
       make all
@@ -24,10 +24,8 @@ Implementation made for the discipline of Computer Networks - SSC0142 at ICMC - 
  - Or compile one by one:
     ```
     make server
+    make client
     ```
-		```
-		make client
-		```
 		
   - First run server by:
       ```
