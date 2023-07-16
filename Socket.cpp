@@ -214,11 +214,11 @@ int MySocket::socketRead(std::string &buffer, int length) {
 
 int MySocket::socketSafeRead(std::string &buffer, int length, int timeout) {
   std::vector<SocketWithInfo *> reads;
-  auto meWithInfo = new SocketWithInfo(this, false);
-  reads.push_back(meWithInfo);
+  auto clientInfo = new SocketWithInfo(this, false);
+  reads.push_back(clientInfo);
   int count = MySocket::select(&reads, nullptr, nullptr, timeout);
 
-  delete meWithInfo;
+  delete clientInfo;
 
   if (count < 1) {
 

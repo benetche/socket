@@ -28,7 +28,7 @@ public:
   using argsT = std::vector<std::string>;
   using commandFnT = std::function<int(const argsT &)>;
   using messageFnT = std::function<int(std::string)>;
-  void addCommand(std::string, commandFnT);
+  void implementCommand(std::string, commandFnT);
   std::vector<std::string> getCommands();
   int executeCommand(std::string);
   void exitFailing(std::string, int);

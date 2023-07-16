@@ -19,7 +19,7 @@ Server::Server(std::string address) {
 }
 int Server::init() {
 
-  this->meWithInfo = new SocketWithInfo(socket, false);
+  this->clientInfo = new SocketWithInfo(socket, false);
 
   socket->bind(address, DEFAULT_PORT);
 
@@ -78,7 +78,7 @@ int Server::stop() {
   }
   this->closeClients();
   this->socket->close();
-  delete this->meWithInfo;
+  delete this->clientInfo;
   return 0;
 }
 
@@ -127,7 +127,7 @@ void Server::_accept() {
   while (this->shouldBeAccepting) {
 
     std::vector<SocketWithInfo *> reads(1);
-    reads[0] = meWithInfo;
+    reads[0] = clientInfo;
 
     if (MySocket::select(&reads, nullptr, nullptr, 1) == 0) {
       continue;
@@ -238,10 +238,15 @@ void Server::handleMessage(SocketWithInfo *client, std::string message) {
 
         std::regex isValidChannelName = std::regex("^([#&][^\\x07\\x2C\\s]+)$");
 
-        if (!std::regex_match(newChannel, isValidChannelName) ||
-            newChannel.size() > 200) {
+        if (!std::regex_match(newChannel, isValidChannelName)) {
           GUI::log("Channel join failed: Invalid channel name.");
-          this->sendMessage("Invalid channel name according with RFC 1459!",
+          this->sendMessage("Channel name should start with '#' or '&'",
+                            client);
+          return;
+        }
+        if (newChannel.size() > 200) {
+          GUI::log("Channel join failed: Invalid channel name.");
+          this->sendMessage("Channel name can't have more than 200 letters",
                             client);
           return;
         }
@@ -385,11 +390,6 @@ void Server::handleMessage(SocketWithInfo *client, std::string message) {
       if (match.size() > 1) {
 
         std::string target = match[1];
-        if (target == client->nickname) {
-          GUI::log("Whois failed: Cannot whois yourself!");
-          this->sendMessage("Cannot whois yourself!", client);
-          return;
-        }
 
         if (!client->isAdmin) {
           GUI::log("Whois failed: You are not an admin!");
@@ -412,7 +412,7 @@ void Server::handleMessage(SocketWithInfo *client, std::string message) {
 
         GUI::log(client->nickname + " whois " + target);
 
-        this->sendMessage(target + " is connected from " + ipAddress + "!",
+        this->sendMessage(target + "'s IP address is" + ipAddress + "!",
                           client);
 
         return;

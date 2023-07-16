@@ -37,7 +37,7 @@ private:
   void _listen();
   void closeClients();
   void closeClient(SocketWithInfo *client);
-  SocketWithInfo *meWithInfo;
+  SocketWithInfo *clientInfo;
   void handleMessage(SocketWithInfo *client, std::string message);
 
 public:

@@ -1,6 +1,6 @@
 // Copyright (c) 2015-2019, Ulf Magnusson <ulfalizer@gmail.com>
 // https://github.com/ulfalizer/readline-and-ncurses
-#define COMMAND_WINDOW_HEIGHT 2
+#define COMMAND_WINDOW_HEIGHT 4
 #define SUGGESTION_WINDOW_HEIGHT 3
 #define CONTENT_WINDOW_HEIGHT                                                  \
   (LINES - COMMAND_WINDOW_HEIGHT - SUGGESTION_WINDOW_HEIGHT)
@@ -195,7 +195,6 @@ void GUI::windowRedisplay(bool isResizing) {
   size_t prompt_width = strwidth(rl_display_prompt, 0);
   size_t cursor_col =
       prompt_width + strnwidth(rl_line_buffer, rl_point, prompt_width);
-
   CHECK_NCURSES(werase, commandWindow);
   // This might write a string wider than the terminal currently, so don't
   // check for errors
@@ -245,14 +244,6 @@ void GUI::initNCurses() {
   CHECK_NCURSES_VOID(noecho);
   CHECK_NCURSES_VOID(nonl);
   CHECK_NCURSES(intrflush, NULL, FALSE);
-  // Do not enable keypad() since we want to pass unadulterated input to
-  // readline
-
-  // Explicitly specify a "very visible" cursor to make sure it's at least
-  // consistent when we turn the cursor on and off (maybe it would make sense
-  // to query it and use the value we get back too). "normal" vs. "very
-  // visible" makes no difference in gnome-terminal or xterm. Let this fail
-  // for terminals that do not support cursor visibility adjustments.
   curs_set(2);
 
   if (LINES >= MIN_WINDOW_HEIGHT) {
@@ -335,7 +326,7 @@ void GUI::closeReadline() { rl_callback_handler_remove(); }
 
 char GUI::readFromGUI() { return wgetch(commandWindow); }
 
-void GUI::addCommand(std::string command, commandFnT fn) {
+void GUI::implementCommand(std::string command, commandFnT fn) {
   commands[command] = fn;
 }
 

@@ -17,12 +17,12 @@ Client::Client() { init(); }
 
 void Client::init() {
   delete this->socket;
-  delete this->meWithInfo;
+  delete this->clientInfo;
   isConnectedMutex.lock();
   this->_isConnected = false;
   isConnectedMutex.unlock();
   this->socket = new MySocket(AF_INET, SOCK_STREAM, 0);
-  meWithInfo = new SocketWithInfo(socket, true);
+  clientInfo = new SocketWithInfo(socket, true);
 }
 
 int Client::start() {
@@ -121,7 +121,7 @@ bool Client::isConnected(bool shouldLog) {
 }
 
 bool Client::hasChannel(bool shouldLog) {
-  if (meWithInfo->channel == "") {
+  if (clientInfo->channel == "") {
     if (shouldLog) {
       GUI::log("You must be in a channel to use this command!");
     }
@@ -135,7 +135,7 @@ void Client::startListening() {
   this->listenThread = new std::thread(&Client::_listen, this);
 }
 
-bool Client::isMuted() { return meWithInfo->isMuted; }
+bool Client::isMuted() { return clientInfo->isMuted; }
 
 void Client::_listen() {
   std::string message;
@@ -159,9 +159,9 @@ void Client::_listen() {
           std::smatch match;
           std::regex_search(message, match, regex);
           if (match.size() > 1) {
-            meWithInfo->nickname = match[1].str();
+            clientInfo->nickname = match[1].str();
 
-            GUI::updatePrompt(meWithInfo);
+            GUI::updatePrompt(clientInfo);
 
             continue;
           }
@@ -170,23 +170,23 @@ void Client::_listen() {
           std::regex_search(message, match, regex);
 
           if (match.size() > 1) {
-            meWithInfo->isAdmin = match[2].str() == "admin";
-            meWithInfo->channel = match[1].str();
+            clientInfo->isAdmin = match[2].str() == "admin";
+            clientInfo->channel = match[1].str();
 
-            GUI::updatePrompt(meWithInfo);
+            GUI::updatePrompt(clientInfo);
 
-            GUI::log("Joined channel " + meWithInfo->channel + " as " +
-                     (meWithInfo->isAdmin ? "admin" : "user") +
+            GUI::log("Joined channel " + clientInfo->channel + " as " +
+                     (clientInfo->isAdmin ? "admin" : "user") +
                      " successfully!");
             continue;
           }
 
           if (message == "/kicked") {
 
-            meWithInfo->isAdmin = false;
-            meWithInfo->channel = "";
+            clientInfo->isAdmin = false;
+            clientInfo->channel = "";
 
-            GUI::updatePrompt(meWithInfo);
+            GUI::updatePrompt(clientInfo);
 
             GUI::log("You have been kicked from your current channel!");
 
@@ -194,13 +194,13 @@ void Client::_listen() {
           }
 
           if (message == "/muted") {
-            meWithInfo->isMuted = true;
+            clientInfo->isMuted = true;
             GUI::log("You have been muted!");
             continue;
           }
 
           if (message == "/unmuted") {
-            meWithInfo->isMuted = false;
+            clientInfo->isMuted = false;
             GUI::log("You have been unmuted!");
             continue;
           }

@@ -17,23 +17,27 @@ Implementation made for the discipline of Computer Networks - SSC0142 at ICMC - 
 
 ## Instructions:
 
- - To compile the server run the following command:
+  - You can compile both server and client by:
+      ```
+      make all
+      ```
+ - Or compile one by one:
     ```
     make server
     ```
-  - To compile the client run the following command:
-      ```
-      make client
-      ```
-  - To run the server run the following command:
+		```
+		make client
+		```
+		
+  - First run server by:
       ```
       ./server
       ```
-  - To run the client run the following command:
+  - Then run client by:
       ```
       ./client
       ```
-  - To clear the compiled files run the following command:
+  - You can clear all generated files with:
       ```
       make clean
       ```

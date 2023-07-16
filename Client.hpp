@@ -13,7 +13,7 @@ class Client {
 private:
   MySocket *socket;
   std::string address;
-  SocketWithInfo *meWithInfo;
+  SocketWithInfo *clientInfo;
   bool _isConnected = false;
   std::mutex isConnectedMutex;
   bool shouldBeListening = false;

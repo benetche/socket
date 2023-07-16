@@ -9,8 +9,8 @@ LDFLAGS=
 VFLAGS=--leak-check=full --show-leak-kinds=all --track-origins=yes
 
 SRCS    := $(wildcard ./*.cpp)
-SERVER_SRCS := $(filter-out %/client.cpp,$(SRCS))
-CLIENT_SRCS := $(filter-out %/server.cpp,$(SRCS))
+SERVER_SRCS := $(filter-out %/clientMain.cpp,$(SRCS))
+CLIENT_SRCS := $(filter-out %/serverMain.cpp,$(SRCS))
 SERVER_OBJS    := $(patsubst ./%.cpp,./%.o,$(SERVER_SRCS))
 CLIENT_OBJS    := $(patsubst ./%.cpp,./%.o,$(CLIENT_SRCS))
 
@@ -19,6 +19,8 @@ CLIENT_TARGET=client
 
 ./%.o: ./%.cpp ./%.hpp
 	$(CC) $(CFLAGS) -c $< -o $@
+
+all: server client
 
 server: $(SERVER_OBJS)
 	$(LD) $(LDFLAGS) $^ -o $(SERVER_TARGET) $(LDLIBS)
