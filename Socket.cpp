@@ -1,18 +1,127 @@
 #include "Socket.hpp"
 #include "interface.hpp"
 #include "util.hpp"
+
+
 #include <arpa/inet.h>
+/*
+ * Biblioteca para manipulação de endereços IP.
+ *
+ * Constantes:
+ *   - AF_INET: endereço IPv4.
+ *   - AF_UNIX: endereço UNIX.
+ *
+ * Funções:
+ *   - inet_ntop(): converte um endereço IP binário para uma string no formato legível.
+ */
+
 #include <errno.h>
+/*
+ * Biblioteca que contém a variável errno, utilizada para armazenar o código de erro
+ * de uma função quando ocorre um erro.
+ *
+ * Constante:
+ *   - errno: variável que armazena o código de erro.
+ */
+
 #include <fcntl.h>
+/*
+ * Biblioteca para controle de arquivos.
+ *
+ * Constantes:
+ *   - O_NONBLOCK: indica que o descritor de arquivo deve ser colocado em modo não-bloqueante.
+ */
+
 #include <iostream>
+/*
+ * Biblioteca para controle de entrada e saída
+ *
+ * Função:
+ *   - std::cout : saída para output.
+ */
+
 #include <netdb.h>
+/*
+ * Biblioteca para busca de nomes de domínio e números de serviço.
+ *
+ * Funções:
+ *   - getaddrinfo(): converte nomes de host ou endereços de IP humanamente legíveis em uma
+ *                    estrutura de endereço struct sockaddr utilizável para criar sockets.
+ *   - gai_strerror(): retorna uma string de erro legível por humanos associada ao código de erro
+ *                      retornado por getaddrinfo() ou getnameinfo().
+ *   - freeaddrinfo(): libera a memória dinamicamente alocada pelo sistema para armazenar a
+ *                      estrutura de endereços retornada por getaddrinfo().
+ *   - getnameinfo(): converte uma estrutura de endereço struct sockaddr em um nome de host e
+ *                     número de serviço humanamente legíveis, o oposto do que getaddrinfo() faz.
+ */
+
 #include <stdlib.h>
+/*
+ * Biblioteca padrão da linguagem C.
+ *
+ * Funções:
+ *   - memset(): preenche um bloco de memória com um determinado valor.
+ */
+
 #include <string.h>
+/*
+ * Biblioteca para manipulação de strings.
+ *
+ * Função:
+ *   - strerror(): retorna uma string que descreve o código de erro especificado em errno.
+ */
+
 #include <string>
+/*
+ * Biblioteca para utilização de strings em C++.
+ *
+ * Classe:
+ *   - std::string: tipo de dado para representar uma string em C++.
+ */
+
 #include <sys/socket.h>
+/*
+ * Biblioteca para manipulação de sockets.
+ *
+ * Funções:
+ *   - socket(): cria um socket.
+ *   - bind(): associa um endereço a um socket.
+ *   - connect(): inicia uma conexão em um socket.
+ *   - listen(): coloca um socket em estado de escuta para aceitar conexões.
+ *   - accept(): aceita uma conexão em um socket em estado de escuta.
+ *   - send(): envia dados através de um socket.
+ *   - recv(): recebe dados através de um socket.
+ *   - setsockopt(): define opções para um socket.
+ *   - getsockopt(): obtém opções de um socket.
+ *   - getsockname(): obtém o endereço associado a um socket.
+ *   - shutdown(): desativa uma parte específica de uma conexão de socket.
+ */
+
 #include <sys/un.h>
+/*
+ * Biblioteca para manipulação de sockets UNIX.
+ *
+ * Estruturas:
+ *   - sockaddr_un: estrutura para representar um endereço de socket UNIX.
+ */
+
 #include <unistd.h>
+/*
+ * Biblioteca para utilização de chamadas de sistema relacionadas a POSIX.
+ *
+ * Função:
+ *   - close(): fecha um descritor de arquivo.
+ */
+
 #include <vector>
+/*
+ * Biblioteca para utilização de vetores em C++.
+ *
+ * Classe:
+ *   - std::vector: tipo de dado para representar um vetor em C++.
+ */
+
+
 
 MySocket::MySocket(int domain, int type, int protocol) {
   memset(&addressInfo, 0, sizeof addressInfo);
