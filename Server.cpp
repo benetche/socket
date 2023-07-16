@@ -506,9 +506,9 @@ void Server::handleMessage(SocketWithInfo *client, std::string message) {
 
 std::string Server::generateDefaultNickname() {
   std::string randNick;
-  while (!this->checkAvaiableNickname(randNick)) {
+  do {
     randNick = "user" + std::to_string(rand());
-  }
+  } while ((!this->checkAvaiableNickname(randNick)));
   return randNick;
 }
 bool Server::checkAvaiableNickname(std::string nickname) {
