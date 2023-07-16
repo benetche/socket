@@ -13,8 +13,6 @@
 #include <unordered_map>
 #include <vector>
 
-// Checks errors for (most) ncurses functions. CHECK_NCURSES(fn, x, y, z) is a
-// checked version of fn(x, y, z).
 #define CHECK_NCURSES(fn, ...)                                                 \
   if (fn(__VA_ARGS__) == ERR)                                                  \
     this->exitFailing(#fn "(" #__VA_ARGS__ ") failed!", EXIT_FAILURE);
