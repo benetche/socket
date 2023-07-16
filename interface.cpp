@@ -46,50 +46,30 @@ GUI *GUI::GetInstance(std::string commandString) {
 }
 
 void GUI::exitFailing(std::string message, int exitCode) {
-  // Make sure endwin() is only called in visual mode. As a note, calling it
-  // twice does not seem to be supported and messed with the cursor position.
+
   if (isInGUI) {
     endwin();
   }
   exitFailure(message, exitCode);
 }
 
-// Calculates the cursor column for the readline window in a way that supports
-// multibyte, multi-column and combining characters. readline itself calculates
-// this as part of its default redisplay function and does not export the
-// cursor column.
-//
-// Returns the total width (in columns) of the characters in the 'n'-byte
-// prefix of the null-terminated multibyte string 's'. If 'n' is larger than
-// 's', returns the total width of the string. Tries to emulate how readline
-// prints some special characters.Server
-//
-// 'offset' is the current horizontal offset within the line. This is used to
-// get tab stops right.
-//
-// Makes a guess for malformed strings.
 size_t GUI::strnwidth(const char *s, size_t n, size_t offset) {
   mbstate_t shift_state;
   wchar_t wc;
   size_t wc_len;
   size_t width = 0;
 
-  // Start in the initial shift state
   memset(&shift_state, '\0', sizeof shift_state);
 
   for (size_t i = 0; i < n; i += wc_len) {
-    // Extract the next multibyte character
     wc_len = mbrtowc(&wc, s + i, MB_CUR_MAX, &shift_state);
     switch (wc_len) {
     case 0:
-      // Reached the end of the string
       return width;
 
     case (size_t)-1:
     case (size_t)-2:
-      // Failed to extract character. Guess that each character is one
-      // byte/column wide each starting from the invalid character to
-      // keep things simple.
+
       width += strnlen(s + i, n - i);
       return width;
     }
@@ -104,13 +84,10 @@ size_t GUI::strnwidth(const char *s, size_t n, size_t offset) {
   return width;
 }
 
-// Like strnwidth, but calculates the width of the entire string
 size_t GUI::strwidth(const char *s, size_t offset) {
   return this->strnwidth(s, SIZE_MAX, offset);
 }
 
-// Not bothering with 'isInputAvailable' and just returning 0 here seems to do
-// the right thing too, but this might be safer across readline versions
 int GUI::readlineInputAvailable() { return singleton->isInputAvailable; }
 
 int GUI::readlineGetc(FILE *dummy) {
@@ -129,7 +106,6 @@ void GUI::redisplayMessage(bool isResizing) {
   CHECK_NCURSES(werase, contentWindow);
   CHECK_NCURSES(mvwaddstr, contentWindow, 0, 0, this->contentString.c_str());
 
-  // We batcisResizingh window updates when resizing
   if (isResizing) {
     CHECK_NCURSES(wnoutrefresh, contentWindow);
   } else {
@@ -196,18 +172,15 @@ void GUI::windowRedisplay(bool isResizing) {
   size_t cursor_col =
       prompt_width + strnwidth(rl_line_buffer, rl_point, prompt_width);
   CHECK_NCURSES(werase, commandWindow);
-  // This might write a string wider than the terminal currently, so don't
-  // check for errors
+
   mvwprintw(commandWindow, 0, 0, "%s%s", rl_display_prompt, rl_line_buffer);
   if ((int)cursor_col >= COLS) {
-    // Hide the cursor if it lies outside the window. Otherwise it'll
-    // appear on the very right.
+
     curs_set(0);
   } else {
     CHECK_NCURSES(wmove, commandWindow, 0, cursor_col);
     curs_set(2);
   }
-  // We batch window updates when resizing
   if (isResizing) {
     CHECK_NCURSES(wnoutrefresh, commandWindow);
   } else {
@@ -226,7 +199,6 @@ void GUI::resize() {
     CHECK_NCURSES(mvwin, commandWindow, COMMAND_WINDOW_Y_POS, 0);
   }
 
-  // Batch refreshes and commit them with doupdate()
   redisplayMessage(true);
   CHECK_NCURSES_VOID(doupdate);
 }
@@ -253,8 +225,7 @@ void GUI::initNCurses() {
     commandWindow =
         newwin(COMMAND_WINDOW_HEIGHT, COLS, COMMAND_WINDOW_Y_POS, 0);
   } else {
-    // Degenerate case. Give the windows the minimum workable size to
-    // prevent errors from e.g. wmove().
+
     contentWindow = newwin(1, COLS, 0, 0);
     commandWindow = newwin(1, COLS, 0, 0);
     suggestionWindow = newwin(1, COLS, 0, 0);
@@ -262,8 +233,7 @@ void GUI::initNCurses() {
   if (!contentWindow || !commandWindow || !suggestionWindow) {
     exitFailing("Failed to allocate windows!", EXIT_FAILURE);
   }
-  // Allow strings longer than the message window and show only the last part
-  // if the string doesn't fit
+
   CHECK_NCURSES(scrollok, contentWindow, TRUE);
 }
 
@@ -281,20 +251,13 @@ void GUI::closeSignalHandler() { signal(SIGINT, SIG_DFL); }
 
 void GUI::initReadline() {
 
-  // Let ncurses do all terminal and signal handling
   rl_catch_signals = 0;
   rl_catch_sigwinch = 0;
   rl_deprep_term_function = NULL;
   rl_prep_term_function = NULL;
 
-  // Prevent readline from setting the LINES and COLUMNS environment
-  // variables, which override dynamic size adjustments in ncurses. When
-  // using the alternate readline interface (as we do here), LINES and
-  // COLUMNS are not updated if the terminal is resized between two calls to
-  // rl_callback_read_char() (which is almost always the case).
   rl_change_environment = 0;
 
-  // Handle input by manually feeding characters to readline
   rl_getc_function = readlineGetc;
   rl_input_available_hook = readlineInputAvailable;
   rl_redisplay_function = readlineRedisplay;
@@ -476,8 +439,7 @@ void GUI::run() {
   this->isRunning = true;
 
   do {
-    // Using getch() here instead would refresh stdscr, overwriting the
-    // initial contents of the other windows on startup
+
     int c = this->readFromGUI();
 
     switch (c) {
@@ -485,11 +447,8 @@ void GUI::run() {
       resize();
       break;
 
-    // Ctrl-L -- redraw screen
     case '\f':
-      // Makes the next refresh repaint the screen from scratch
       CHECK_NCURSES(clearok, curscr, true);
-      // Resize and reposition windows in case that got messed up somehow
       resize();
       break;
 

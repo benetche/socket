@@ -16,15 +16,10 @@ Server::Server(std::string address) {
 int Server::init() {
 
   this->clientInfo = new SocketWithInfo(socket, false);
-
   socket->socketbind(address, DEFAULT_PORT);
-
   this->shouldBeRunning = true;
-
   GUI::log("Server started on " + address + ":" + DEFAULT_PORT);
-
   GUI::log("Waiting for client connection!");
-
   this->acceptClients();
   this->listenClients();
 
