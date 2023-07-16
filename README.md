@@ -4,6 +4,8 @@ Internet Relay Chat (IRC) implemented in C++ using RFC 1459 expecifications
 
 ## Group:
 - Vitor Beneti Martins - 11877635
+- Nelson Luiz Serpa de Oliveira - 9793502
+- Lucas Massao Fukusawa Dagnone - 11295810
 
 ## Specifications:
 
