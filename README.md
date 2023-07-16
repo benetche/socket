@@ -16,7 +16,15 @@ Implementation made for the discipline of Computer Networks - SSC0142 at ICMC - 
 - C++ Standard: C++11
 
 ## Instructions:
-You'll probably need to install ncurses and readline libraries
+You'll probably need to install ncurses lib:
+```
+sudo apt-get install libncurses5-dev libncursesw5-dev
+```
+And readline lib:
+```
+sudo apt-get install libreadline-dev 
+```
+These libs are used for running a GUI.
   - You can compile both server and client by:
       ```
       make all
