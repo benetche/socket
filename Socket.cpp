@@ -17,7 +17,7 @@
 
 #include <errno.h>
 /*
- * Biblioteca que contém a variável errno, utilizada para armazenar o código de erro
+ * Biblioteca com a variável errno, utilizada para armazenar o código de erro
  * de uma função quando ocorre um erro.
  *
  * Constante:
@@ -123,6 +123,18 @@
 
 
 
+// Parâmetros:
+//   - domain: domínio do socket (por exemplo, AF_INET para IPv4).
+//   - type: tipo do socket (por exemplo, SOCK_STREAM para TCP).
+//   - protocol: protocolo utilizado pelo socket (por exemplo, IPPROTO_TCP para TCP).
+//
+// Comportamento:
+//   - Utiliza a função memset() para preencher a estrutura de informações do endereço (addressInfo) com zeros.
+//   - Chama a função socket() para criar um novo socket, passando os parâmetros domain, type e protocol.
+//   - Verifica se o socket foi criado com sucesso. Caso contrário, chama a função safeExitFailure() para lidar com o erro.
+//   - Atribui os valores domain, type e protocol à estrutura addressInfo.
+//   - Inicializa as propriedades portNumber e ipAddress como strings vazias.
+
 MySocket::MySocket(int domain, int type, int protocol) {
   memset(&addressInfo, 0, sizeof addressInfo);
   socketFD = socket(domain, type, protocol);
@@ -137,6 +149,29 @@ MySocket::MySocket(int domain, int type, int protocol) {
   portNumber = "";
   ipAddress = "";
 }
+
+// MySocket::socketbind()
+//
+// Descrição: Associa o endereço IP e a porta especificados ao socket.
+//
+// Parâmetros:
+//   - ip: endereço IP a ser associado ao socket.
+//   - port: número da porta a ser associado ao socket.
+//
+// Retorno:
+//   - status: inteiro representando o resultado da operação. Retorna 0 em caso de sucesso e -1 em caso de erro.
+//
+// Comportamento:
+//   - Atribui os valores de ip e port às propriedades ipAddress e portNumber, respectivamente.
+//   - Verifica se o domínio do socket é AF_UNIX.
+//     - Se for, cria uma estrutura sockaddr_un, preenche os campos necessários e chama a função bind() passando essa estrutura.
+//     - Caso contrário, utiliza a função getaddrinfo() para obter informações do endereço com base em ip e port.
+//       - Em caso de erro, chama a função safeExitFailure() para lidar com o erro.
+//       - Atribui os valores retornados pela função getaddrinfo() à estrutura addressInfo.
+//       - Libera a memória alocada pela função getaddrinfo() utilizando a função freeaddrinfo().
+//       - Chama a função bind() passando a estrutura addressInfo.
+//   - Verifica se ocorreu um erro na chamada à função bind(). Em caso afirmativo, chama a função safeExitFailure() para lidar com o erro.
+//   - Retorna o valor de status.
 
 int MySocket::socketbind(std::string ip, std::string port) {
   this->ipAddress = ip;
@@ -169,6 +204,37 @@ int MySocket::socketbind(std::string ip, std::string port) {
   }
   return status;
 }
+
+// MySocket::socketConnect()
+//
+// Descrição: Estabelece uma conexão com o endereço IP e a porta especificados.
+//
+// Parâmetros:
+//   - ip: endereço IP ao qual se deseja conectar.
+//   - port: número da porta à qual se deseja conectar.
+//
+// Retorno:
+//   - status: 0 em caso de sucesso e -1 em caso de erro.
+//
+// Comportamento:
+//   - Atribui os valores de ip e port às propriedades ipAddress e portNumber, respectivamente.
+//   - Inicializa status como 0.
+//   - Verifica se o domínio do socket é AF_UNIX.
+//     - Se for, cria uma estrutura sockaddr_un, preenche os campos necessários e chama a função connect() passando essa estrutura.
+//     - Caso contrário, utiliza a função getaddrinfo() para obter informações do endereço com base em ip e port.
+//       - Em caso de erro, chama a função safeExitFailure() para lidar com o erro.
+//       - Atribui os valores retornados pela função getaddrinfo() à estrutura addressInfo.
+//       - Libera a memória alocada pela função getaddrinfo() utilizando a função freeaddrinfo().
+//       - Chama a função connect() passando a estrutura addressInfo.
+//       - Verifica se ocorreu um erro na chamada à função connect().
+//         - Se o erro for EINPROGRESS, significa que a conexão está em andamento.
+//           - Cria um objeto SocketWithInfo temporário para uso no seletor.
+//           - Chama a função MySocket::select() para aguardar até que a conexão seja estabelecida ou ocorra um erro.
+//           - Verifica o resultado do seletor e trata os casos possíveis.
+//           - Deleta o objeto SocketWithInfo temporário.
+//         - Se o erro for ECONNREFUSED, significa que a conexão foi recusada.
+//     - Se ocorreu um erro na chamada à função connect() ou no seletor, chama a função safeExitFailure() para lidar com o erro.
+//   - Retorna o valor de status.
 
 int MySocket::socketConnect(std::string ip, std::string port) {
   this->ipAddress = ip;
@@ -252,6 +318,20 @@ int MySocket::socketConnect(std::string ip, std::string port) {
   return status;
 }
 
+
+// Descrição: Coloca o socket em modo de escuta para aguardar conexões.
+//
+// Parâmetros:
+//   - maxQueue: tamanho máximo da fila de conexões pendentes.
+//
+// Retorno:
+//   - status: 0 em caso de sucesso e -1 em caso de erro.
+//
+// Comportamento:
+//   - Chama a função listen() para colocar o socket em modo de escuta, especificando o tamanho máximo da fila de conexões pendentes (maxQueue).
+//   - Verifica se ocorreu um erro na chamada à função listen(). Em caso afirmativo, chama a função safeExitFailure() para lidar com o erro.
+//   - Retorna o valor de status.
+
 int MySocket::socketListen(int maxQueue) {
   int status;
   status = ::listen(socketFD, maxQueue);
@@ -261,6 +341,24 @@ int MySocket::socketListen(int maxQueue) {
   }
   return status;
 }
+
+// MySocket::accept()
+//
+// Descrição: Aceita uma conexão em um socket e cria um novo objeto MySocket para representar a nova conexão.
+//
+// Retorno:
+//   - newSocket: ponteiro para um objeto MySocket que representa a nova conexão aceita.
+//
+// Comportamento:
+//   - Cria uma estrutura sockaddr_storage e uma variável otherAddrLen para armazenar informações sobre o endereço do cliente.
+//   - Chama a função accept() para aceitar uma conexão no socket e obter um novo descritor de socket para a conexão aceita.
+//   - Verifica se ocorreu um erro na chamada à função accept(). Em caso afirmativo, chama a função safeExitFailure() para lidar com o erro.
+//   - Cria um novo objeto MySocket com base nas informações de domínio, tipo e protocolo do socket original.
+//   - Atribui o novo descritor de socket (newSocketFD) e o número da porta ao novo objeto MySocket.
+//   - Obtém o endereço IP do cliente usando a função getnameinfo().
+//     - Em caso de erro, chama a função safeExitFailure() para lidar com o erro.
+//   - Atribui o endereço IP ao novo objeto MySocket e atualiza a família do endereço e o ponteiro para o endereço na estrutura addressInfo do novo objeto.
+//   - Retorna o ponteiro para o novo objeto MySocket.
 
 MySocket *MySocket::accept() {
   struct sockaddr_storage otherAddr;
@@ -288,6 +386,22 @@ MySocket *MySocket::accept() {
   newSocket->addressInfo.ai_addr = (struct sockaddr *)&otherAddr;
   return newSocket;
 }
+
+
+
+// Parâmetros:
+//   - message: mensagem a ser enviada pelo socket.
+//
+// Retorno:
+//   - status: número de bytes enviados em caso de sucesso e -1 em caso de erro.
+//
+// Comportamento:
+//   - Obtém o código de erro (error) e seu tamanho (len) utilizando a função getsockopt(), passando o socketFD, SOL_SOCKET e SO_ERROR.
+//   - Verifica se ocorreu um erro na chamada à função getsockopt() ou se o código de erro não é zero.
+//     - Em caso afirmativo, retorna -2 para indicar um erro.
+//   - Chama a função send() para enviar a mensagem pelo socket, passando o socketFD, a mensagem convertida para uma sequência de caracteres, o tamanho da mensagem e a flag 0.
+//   - Verifica se ocorreu um erro na chamada à função send(). Em caso afirmativo, chama a função safeExitFailure() para lidar com o erro.
+//   - Retorna o valor de status, que representa o número de bytes enviados.
 int MySocket::socketWrite(std::string message) {
 
   int error = 0;
@@ -307,6 +421,23 @@ int MySocket::socketWrite(std::string message) {
   return status;
 }
 
+
+// Parâmetros:
+//   - buffer: referência para uma string onde os dados lidos serão armazenados.
+//   - length: tamanho máximo a ser lido do socket.
+//
+// Retorno:
+//   - status: Retorna o número de bytes lidos em caso de sucesso e -1 em caso de erro.
+//
+// Comportamento:
+//   - Aloca um buffer temporário de caracteres (char) com o tamanho especificado.
+//   - Limpa o buffer temporário.
+//   - Chama a função recv() para ler dados do socket, passando o socketFD, o buffer temporário, o tamanho a ser lido (length - 1) e a flag 0.
+//   - Verifica se ocorreu um erro na chamada à função recv(). Em caso afirmativo, chama a função safeExitFailure() para lidar com o erro.
+//   - Copia o conteúdo do buffer temporário para a string de destino (buffer).
+//   - Libera a memória alocada para o buffer temporário.
+//   - Retorna o valor de status, que representa o número de bytes lidos.
+
 int MySocket::socketRead(std::string &buffer, int length) {
   char *buff = new char[length];
   memset(buff, 0, length);
@@ -321,6 +452,25 @@ int MySocket::socketRead(std::string &buffer, int length) {
   return status;
 }
 
+// Parâmetros:
+//   - buffer: referência para uma string onde os dados lidos serão armazenados.
+//   - length: tamanho máximo a ser lido do socket.
+//   - timeout: tempo máximo em segundos para esperar por dados no socket.
+//
+// Retorno:
+//   - status: inteiro representando o resultado da operação. Retorna o número de bytes lidos em caso de sucesso, -1 em caso de timeout e -2 em caso de erro.
+//
+// Comportamento:
+//   - Cria um vetor de ponteiros SocketWithInfo para leitura (reads) e adiciona um elemento ao vetor contendo informações do socket atual.
+//   - Chama a função select() para esperar até que o socket esteja pronto para leitura, usando o vetor reads, nullptr para o vetor de escrita (writes) e exceção (excepts), e o tempo limite especificado.
+//   - Verifica se ocorreu um timeout, retornando -1 se nenhum socket estiver pronto para leitura.
+//   - Aloca um buffer temporário de caracteres (char) com o tamanho especificado.
+//   - Limpa o buffer temporário.
+//   - Chama a função recv() para ler dados do socket, passando o socketFD, o buffer temporário, o tamanho a ser lido (length - 1) e a flag 0.
+//   - Verifica se ocorreu um erro na chamada à função recv(). Em caso afirmativo, chama a função safeExitFailure() para lidar com o erro.
+//   - Copia o conteúdo do buffer temporário para a string de destino (buffer).
+//   - Libera a memória alocada para o buffer temporário.
+//   - Retorna o valor de status, que representa o número de bytes lidos.
 int MySocket::socketSafeRead(std::string &buffer, int length, int timeout) {
   std::vector<SocketWithInfo *> reads;
   auto clientInfo = new SocketWithInfo(this, false);
@@ -347,6 +497,18 @@ int MySocket::socketSafeRead(std::string &buffer, int length, int timeout) {
   return status;
 }
 
+// Parâmetros:
+//   - level: nível no qual a opção é definida.
+//   - optName: nome da opção a ser definida.
+//   - optVal: uponteiro para o valor da opção.
+//
+// Retorno:
+//   - status: inteiro representando o resultado da operação. Retorna 0 em caso de sucesso e -1 em caso de erro.
+//
+// Comportamento:
+//   - Chama a função setsockopt() para definir uma opção do socket, passando o socketFD, o nível (level), o nome da opção (optName), o valor da opção (optVal) e o tamanho do valor.
+//   - Verifica se ocorreu um erro na chamada à função setsockopt(). Em caso afirmativo, chama a função safeExitFailure() para lidar com o erro.
+//   - Retorna o valor de status, que representa o resultado da operação.
 int MySocket::socketSetOpt(int level, int optName, void *optVal) {
 
   int status = ::setsockopt(socketFD, level, optName, optVal, sizeof optVal);
@@ -357,6 +519,19 @@ int MySocket::socketSetOpt(int level, int optName, void *optVal) {
   return status;
 }
 
+// Parâmetros:
+//   - level: nível no qual a opção está definida.
+//   - optName: nome da opção a ser obtida.
+//   - optVal: ponteiro para o valor da opção.
+//
+// Retorno:
+//   - status: inteiro representando o resultado da operação. Retorna 0 em caso de sucesso e -1 em caso de erro.
+//
+// Comportamento:
+//   - Obtém o tamanho da opção (lentgh) utilizando a função sizeof() com o ponteiro optVal.
+//   - Chama a função getsockopt() para obter o valor de uma opção do socket, passando o socketFD, o nível (level), o nome da opção (optName), o ponteiro para o valor da opção (optVal) e o tamanho da opção.
+//   - Verifica se ocorreu um erro na chamada à função getsockopt(). Em caso afirmativo, chama a função safeExitFailure() para lidar com o erro.
+//   - Retorna o valor de status, que representa o resultado da operação.
 int MySocket::socketGetOpt(int level, int optName, void *optVal) {
   socklen_t lentgh = sizeof optVal;
   int status = ::getsockopt(socketFD, level, optName, optVal, &lentgh);
@@ -367,7 +542,25 @@ int MySocket::socketGetOpt(int level, int optName, void *optVal) {
   return status;
 }
 
+
+// Comportamento:
+//   - Chama a função close() para fechar o socketFD.
 void MySocket::close() { ::close(socketFD); }
+
+
+// Parâmetros:
+//   - blocking: booleano que indica se o socket deve ser definido como bloqueante (true) ou não-bloqueante (false).
+//
+// Retorno:
+//   - status: inteiro representando o resultado da operação. Retorna o novo status do socket em caso de sucesso e -1 em caso de erro.
+//
+// Comportamento:
+//   - Obtém o status atual do socket chamando a função fcntl() com o socketFD e F_GETFL.
+//   - Verifica se ocorreu um erro na chamada à função fcntl(). Em caso afirmativo, chama a função safeExitFailure() para lidar com o erro.
+//   - Se o valor de blocking for true, remove a flag O_NONBLOCK do status. Caso contrário, adiciona a flag O_NONBLOCK ao status.
+//   - Chama a função fcntl() novamente para definir o novo status do socket.
+//   - Verifica se ocorreu um erro na segunda chamada à função fcntl(). Em caso afirmativo, chama a função safeExitFailure() para lidar com o erro.
+//   - Retorna o novo valor de status, que representa o status atualizado do socket.
 
 int MySocket::setBlocking(bool blocking) {
   long status = fcntl(socketFD, F_GETFL, NULL);
@@ -394,6 +587,22 @@ int MySocket::setBlocking(bool blocking) {
   return (int)status;
 }
 
+// MySocket::socketShutdown(int how)
+//
+// Descrição: Desliga uma parte da conexão do socket.
+//
+// Parâmetros:
+//   - how: parte da conexão a ser desligada (SHUT_RD, SHUT_WR ou SHUT_RDWR).
+//
+// Retorno:
+//   - status: inteiro representando o resultado da operação. Retorna 0 em caso de sucesso e -1 em caso de erro.
+//
+// Comportamento:
+//   - Chama a função shutdown() para desligar uma parte da conexão do socket, passando o socketFD e a parte da conexão (how).
+//   - Verifica se ocorreu um erro na chamada à função shutdown(). Em caso afirmativo, chama a função safeExitFailure() para lidar com o erro.
+//   - Retorna o valor de status, que representa o resultado da operação.
+
+
 int MySocket::socketShutdown(int how) {
   int status = ::shutdown(socketFD, how);
 
@@ -404,10 +613,30 @@ int MySocket::socketShutdown(int how) {
   return status;
 }
 
+// Descrição: Espera até que um ou mais sockets estejam prontos para leitura, escrita ou exceção.
+//
+// Parâmetros:
+//   - reads: ponteiro para um vetor de ponteiros SocketWithInfo com informações sobre os sockets para leitura.
+//   - writes: ponteiro para um vetor de ponteiros SocketWithInfo com informações sobre os sockets para escrita.
+//   - excepts: ponteiro para um vetor de ponteiros SocketWithInfo com informações sobre os sockets para exceção.
+//   - timeout: tempo máximo em segundos a esperar pelos sockets.
+//
+// Retorno:
+//   - result: número de sockets prontos em caso de sucesso e -1 em caso de erro.
+//
+// Comportamento:
+//   - Declara e inicializa variáveis e estruturas necessárias para a chamada à função select(), como timeval, fd_set e maxSock.
+//   - Define o valor de timeout na estrutura timeval.
+//   - Limpa as estruturas fd_set para leitura, escrita e exceção.
+//   - Determina o valor máximo do socket entre os sockets fornecidos em reads, writes e excepts.
+//   - Adiciona cada socket de leitura, escrita e exceção às respectivas estruturas fd_set.
+//   - Chama a função select() com o valor máximo do socket + 1, as estruturas fd_set, e a estrutura timeval.
+//   - Verifica se ocorreu um erro na chamada à função select(). Em caso afirmativo, chama a função safeExitFailure() para lidar com o erro.
+//   - Remove os sockets que não estão prontos para leitura, escrita ou exceção dos respectivos vetores.
+//   - Retorna o valor de result, que representa o número de sockets prontos.
 int MySocket::select(std::vector<SocketWithInfo *> *reads,
                      std::vector<SocketWithInfo *> *writes,
                      std::vector<SocketWithInfo *> *excepts, int timeout) {
-  // int id = reads->at(0)->socketFD;
 
   struct timeval timeValue;
   fd_set readFDs;
@@ -487,6 +716,18 @@ int MySocket::select(std::vector<SocketWithInfo *> *reads,
   return result;
 }
 
+
+// Retorno:
+//   - ip: string contendo o endereço IP do socket.
+//
+// Comportamento:
+//   - Declara uma estrutura sockaddr_in e um tamanho (len) para armazenar informações do socket.
+//   - Chama a função getsockname() para obter o endereço do socket, passando o socketFD, um ponteiro para a estrutura sockaddr_in e um ponteiro para o tamanho.
+//   - Verifica se ocorreu um erro na chamada à função getsockname(). Em caso afirmativo, chama a função safeExitFailure() para lidar com o erro.
+//   - Converte o endereço IP em formato binário para uma string usando a função inet_ntop().
+//   - Retorna a string que representa o endereço IP.
+
+
 std::string MySocket::getIpAddress() {
   struct sockaddr_in addr;
   socklen_t len = sizeof(addr);
@@ -499,6 +740,13 @@ std::string MySocket::getIpAddress() {
   return std::string(ip);
 }
 
+// Parâmetros:
+//   - socket: um ponteiro para o objeto MySocket associado ao SocketWithInfo.
+//   - isClient: um valor booleano que indica se o SocketWithInfo representa um cliente ou não.
+//
+// Comportamento:
+//   - Atribui o valor do ponteiro MySocket recebido ao atributo socket.
+//   - Atribui o valor de isClient ao atributo isClient.
 SocketWithInfo::SocketWithInfo(MySocket *socket, bool isClient) {
   this->socket = socket;
   this->isClient = isClient;

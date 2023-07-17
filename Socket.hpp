@@ -3,6 +3,13 @@
 
 #include <bits/stdc++.h>
 #include <netdb.h>
+/*
+ * Biblioteca fornece funções e estruturas relacionadas à resolução de nomes de host,
+ * obtenção de informações de endereço IP e outros recursos de rede. 
+ *
+ * Structs:
+ *   - addrinfo: armazena informações de endereço retornadas por funções como getaddrinfo()
+ */
 
 class MySocket;
 
@@ -21,6 +28,7 @@ private:
   std::string ipAddress;
   std::string portNumber;
   struct addrinfo addressInfo;
+  //parte da biblioteca netdb.h. Essa biblioteca fornece funções e estruturas relacionadas à resolução de nomes de host, obtenção de informações de endereço IP e outros recursos de rede. A estrutura addrinfo é usada para armazenar informações de endereço retornadas por funções como getaddrinfo().
 
 public:
   int socketFD;
