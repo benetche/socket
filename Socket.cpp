@@ -12,7 +12,7 @@
  *   - AF_UNIX: endereço UNIX.
  *
  * Funções:
- *   - inet_ntop(): converte um endereço IP binário para uma string no formato legível.
+ *   - inet_ntop(): converte um endereço IP binário para uma string no formato decmia
  */
 
 #include <errno.h>
