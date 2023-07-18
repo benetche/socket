@@ -62,4 +62,4 @@ These libs are used for running a GUI.
 |`/whois <nickname>`|Check IP address from a given user|Admin|
 
 ## Presentation Video:
-    
+You can access the video [here](https://www.youtube.com/watch?v=Wz67WvRbm_w&ab_channel=nelsonoliveira). If it doesn't work try https://www.youtube.com/watch?v=Wz67WvRbm_w&ab_channel=nelsonoliveira
